@@ -1,0 +1,98 @@
+# Mailman邮件列表每日汇总工具配置文件
+# =========================================
+
+# 邮件列表配置
+mailing_lists:
+  # 示例配置，请根据实际情况修改
+  - name: "openEuler社区"
+    url: "https://mail.openeuler.org/postorius/lists/"
+    archive_url: "https://mail.openeuler.org/hyperkitty/"
+    lists:
+      - "dev@openeuler.org"
+      - "community@openeuler.org"
+      - "sig@openeuler.org"
+    
+  - name: "openGauss社区"
+    url: "https://mail.opengauss.org/postorius/lists/"
+    archive_url: "https://mail.opengauss.org/hyperkitty/"
+    lists:
+      - "dev@opengauss.org"
+      - "community@opengauss.org"
+
+# 爬取配置
+crawler:
+  # 每个邮件列表爬取的最大邮件数
+  max_emails_per_list: 50
+  # 请求超时时间（秒）
+  timeout: 30
+  # 请求间隔（秒），避免对服务器造成压力
+  delay: 1
+  # 是否使用代理
+  use_proxy: false
+  # 代理地址（如需要）
+  proxy: ""
+
+# 汇总配置
+digest:
+  # 摘要截取长度（字符数）
+  summary_length: 200
+  # 是否按社区分组
+  group_by_community: true
+  # 是否按日期分组
+  group_by_date: true
+  # 时区
+  timezone: "Asia/Shanghai"
+
+# 推送配置
+push:
+  # 邮件推送
+  email:
+    enabled: true
+    # SMTP服务器配置
+    smtp_server: "smtp.example.com"
+    smtp_port: 465
+    smtp_user: "your_email@example.com"
+    smtp_password: "your_password"
+    smtp_use_ssl: true
+    # 发送者信息
+    from: "your_email@example.com"
+    from_name: "邮件列表汇总机器人"
+    # 接收者列表
+    recipients:
+      - "your_email@example.com"
+    # 邮件主题模板
+    subject_template: "【每日邮件列表汇总】{date}"
+
+  # 飞书推送
+  feishu:
+    enabled: true
+    # 飞书机器人Webhook地址
+    webhook_url: "https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx"
+    # 是否发送富文本消息
+    use_rich_text: true
+    # 消息标题模板
+    title_template: "每日邮件列表汇总 ({date})"
+
+# 定时任务配置
+schedule:
+  # 每天执行时间（cron格式）
+  cron: "0 9 * * *"
+  # 时区
+  timezone: "Asia/Shanghai"
+  # 是否在启动时立即执行一次
+  run_on_start: false
+
+# 日志配置
+logging:
+  level: "INFO"
+  # 日志文件路径（容器内路径）
+  file: "/app/logs/mailman-digest.log"
+  # 日志保留天数
+  retention_days: 7
+
+# 数据存储配置
+storage:
+  # 已处理邮件记录文件（避免重复推送）
+  processed_file: "/app/data/processed_emails.json"
+  # 汇总报告输出目录
+  output_dir: "/app/output"

@@ -35,5 +35,5 @@ logs/
 
 .DS_Store
 
-config/config.yaml
-!config/config.yaml.example
+# 如果有敏感配置，可以取消下面的注释来忽略
+# config/config.local.yaml
