@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   mailman-digest:
@@ -9,46 +9,26 @@ services:
     container_name: mailman-digest
     restart: always
     
-    # 环境变量（可选，用于覆盖配置）
     environment:
       - TZ=Asia/Shanghai
-      # SMTP配置（可选，用于覆盖配置文件）
-      # - SMTP_SERVER=smtp.example.com
-      # - SMTP_PORT=465
-      # - SMTP_USER=your_email@example.com
-      # - SMTP_PASSWORD=your_password
-      # 飞书配置（可选）
-      # - FEISHU_WEBHOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx
     
-    # 挂载配置和数据目录
     volumes:
       - ./config:/app/config
       - ./data:/app/data
       - ./logs:/app/logs
       - ./output:/app/output
     
-    # 端口映射（如果需要暴露Web界面查看报告）
-    # ports:
-    #   - "8080:80"
-    
-    # 资源限制
-    resources:
-      limits:
-        cpus: '1'
-        memory: 512M
-      reservations:
-        cpus: '0.5'
-        memory: 256M
-    
-    # 日志配置
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
-# 数据卷定义
-volumes:
-  data:
-  logs:
-  output:
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
