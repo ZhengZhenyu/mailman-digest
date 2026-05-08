@@ -245,15 +245,15 @@ class MailmanCrawler:
         
         soup = BeautifulSoup(html, 'html.parser')
         
-        # 查找邮件链接
-        # Hyperkitty邮件链接通常在表格或列表中
-        email_links = soup.find_all('a', href=re.compile(r'/message/'))
+        email_links = soup.find_all('a', href=re.compile(r'/thread/'))
         
         for link in email_links:
-            email_url = urljoin(list_url, link.get('href'))
-            email_info = self._parse_hyperkitty_email(email_url, list_name, community_name, date_str)
-            if email_info:
-                emails.append(email_info)
+            thread_url = link.get('href')
+            if thread_url and '/thread/' in thread_url:
+                email_url = urljoin(list_url, thread_url)
+                email_info = self._parse_hyperkitty_email(email_url, list_name, community_name, date_str)
+                if email_info:
+                    emails.append(email_info)
         
         return emails
     
