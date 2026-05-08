@@ -88,16 +88,18 @@ class MailmanCrawler:
                     return 'pipermail'
         return 'unknown'
     
-    def get_yesterday_emails(self, community: Dict, timezone: str = 'Asia/Shanghai') -> List[Dict]:
+    def get_emails_by_date_range(self, community: Dict, start_date: str, end_date: str, timezone: str = 'Asia/Shanghai') -> List[Dict]:
         """
-        获取前一天的邮件列表
+        获取指定日期范围内的邮件列表
         
         Args:
             community: 社区配置字典
+            start_date: 开始日期 (YYYY-MM-DD)
+            end_date: 结束日期 (YYYY-MM-DD)
             timezone: 时区
             
         Returns:
-            件列表
+            邮件列表
         """
         emails = []
         archive_url = community.get('archive_url', '')
@@ -111,17 +113,14 @@ class MailmanCrawler:
         archive_type = self.detect_archive_type(archive_url)
         logger.info(f"社区 {community_name} 归档类型: {archive_type}")
         
-        # 计算前一天的日期
-        yesterday = datetime.now() - timedelta(days=1)
-        yesterday_str = yesterday.strftime('%Y-%m-%d')
-        
         for list_name in list_names:
             try:
-                list_emails = self._crawl_list(
+                list_emails = self._crawl_list_by_date_range(
                     archive_url, 
                     list_name, 
                     archive_type,
-                    yesterday_str,
+                    start_date,
+                    end_date,
                     community_name
                 )
                 emails.extend(list_emails)
@@ -129,6 +128,60 @@ class MailmanCrawler:
                 logger.error(f"爬取邮件列表 {list_name} 失败: {e}")
         
         return emails
+    
+    def get_yesterday_emails(self, community: Dict, timezone: str = 'Asia/Shanghai') -> List[Dict]:
+        """
+        获取前一天的邮件列表
+        
+        Args:
+            community: 社区配置字典
+            timezone: 时区
+            
+        Returns:
+            邮件列表
+        """
+        yesterday = datetime.now() - timedelta(days=1)
+        yesterday_str = yesterday.strftime('%Y-%m-%d')
+        return self.get_emails_by_date_range(community, yesterday_str, yesterday_str, timezone)
+    
+    def _crawl_list_by_date_range(self, archive_url: str, list_name: str,
+                                   archive_type: str, start_date: str, end_date: str,
+                                   community_name: str) -> List[Dict]:
+        """
+        爬取单个邮件列表的日期范围
+        
+        Args:
+            archive_url: 归档URL
+            list_name: 邮件列表名称
+            archive_type: 归档类型
+            start_date: 开始日期 (YYYY-MM-DD)
+            end_date: 结束日期 (YYYY-MM-DD)
+            community_name: 社区名称
+            
+        Returns:
+            邮件列表
+        """
+        emails = []
+        
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        current_dt = start_dt
+        while current_dt <= end_dt:
+            date_str = current_dt.strftime('%Y-%m-%d')
+            
+            if archive_type == 'hyperkitty':
+                day_emails = self._crawl_hyperkitty(archive_url, list_name, date_str, community_name)
+            elif archive_type == 'pipermail':
+                day_emails = self._crawl_pipermail(archive_url, list_name, date_str, community_name)
+            else:
+                logger.warning(f"未知的归档类型: {archive_type}")
+                break
+            
+            emails.extend(day_emails)
+            current_dt += timedelta(days=1)
+        
+        return emails[:self.max_emails]
     
     def _crawl_list(self, archive_url: str, list_name: str, 
                     archive_type: str, date_str: str,
@@ -388,12 +441,14 @@ class MailmanCrawler:
         return False
 
 
-def crawl_all_lists(config: Dict) -> List[Dict]:
+def crawl_all_lists(config: Dict, start_date: str = None, end_date: str = None) -> List[Dict]:
     """
     爬取所有配置的邮件列表
     
     Args:
         config: 完整配置字典
+        start_date: 开始日期 (YYYY-MM-DD)，如果不指定则抓取前一天
+        end_date: 结束日期 (YYYY-MM-DD)，如果不指定则抓取前一天
         
     Returns:
         所有邮件列表
@@ -405,7 +460,10 @@ def crawl_all_lists(config: Dict) -> List[Dict]:
     all_emails = []
     
     for community in mailing_lists:
-        emails = crawler.get_yesterday_emails(community, timezone)
+        if start_date and end_date:
+            emails = crawler.get_emails_by_date_range(community, start_date, end_date, timezone)
+        else:
+            emails = crawler.get_yesterday_emails(community, timezone)
         all_emails.extend(emails)
         logger.info(f"社区 {community.get('name')} 获取到 {len(emails)} 封邮件")
     

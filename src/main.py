@@ -50,12 +50,13 @@ def setup_logging(config: Dict) -> logging.Logger:
     return logging.getLogger(__name__)
 
 
-def run_digest_task(config: Dict) -> Dict:
+def run_digest_task(config: Dict, days: int = 1) -> Dict:
     """
     执行汇总任务
     
     Args:
         config: 完整配置
+        days: 抓取天数，默认为1（只抓取前一天）
         
     Returns:
         报告数据
@@ -66,15 +67,21 @@ def run_digest_task(config: Dict) -> Dict:
     logger.info("开始执行邮件列表汇总任务")
     logger.info("=" * 50)
     
-    # 获取前一天的日期
-    yesterday = datetime.now() - timedelta(days=1)
-    yesterday_str = yesterday.strftime('%Y-%m-%d')
+    if days == 1:
+        yesterday = datetime.now() - timedelta(days=1)
+        yesterday_str = yesterday.strftime('%Y-%m-%d')
+        start_date = yesterday_str
+        end_date = yesterday_str
+        logger.info(f"汇总日期: {yesterday_str}")
+    else:
+        end_date_obj = datetime.now() - timedelta(days=1)
+        start_date_obj = end_date_obj - timedelta(days=days-1)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+        logger.info(f"汇总日期范围: {start_date} 至 {end_date} (共{days}天)")
     
-    logger.info(f"汇总日期: {yesterday_str}")
-    
-    # 爬取邮件列表
     logger.info("开始爬取邮件列表...")
-    emails = crawl_all_lists(config)
+    emails = crawl_all_lists(config, start_date, end_date)
     logger.info(f"爬取完成，共获取 {len(emails)} 封邮件")
     
     # 过滤已处理的邮件
@@ -174,6 +181,10 @@ def main():
     parser.add_argument('--run-now', 
                         action='store_true',
                         help='立即执行一次汇总任务')
+    parser.add_argument('--days',
+                        type=int,
+                        default=1,
+                        help='抓取天数，默认为1（只抓取前一天），测试时可设置为15')
     args = parser.parse_args()
     
     # 加载配置
