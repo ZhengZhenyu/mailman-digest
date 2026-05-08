@@ -3,10 +3,9 @@
 
 # 邮件列表配置
 mailing_lists:
-  # 示例配置，请根据实际情况修改
   - name: "openEuler社区"
     url: "https://mail.openeuler.org/postorius/lists/"
-    archive_url: "https://mail.openeuler.org/hyperkitty/"
+    archive_url: "https://mailweb.openeuler.org/archives/"
     lists:
       - "dev@openeuler.org"
       - "community@openeuler.org"
