@@ -35,5 +35,5 @@ logs/
 
 .DS_Store
 
-# 如果有敏感配置，可以取消下面的注释来忽略
-# config/config.local.yaml
+# 忽略敏感配置文件
+config/config.yaml
