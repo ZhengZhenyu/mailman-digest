@@ -88,6 +88,39 @@ class MailmanCrawler:
                     return 'pipermail'
         return 'unknown'
     
+    def discover_lists(self, archive_url: str) -> List[str]:
+        """
+        自动发现邮件列表
+        
+        Args:
+            archive_url: 归档首页URL
+            
+        Returns:
+            邮件列表名称列表
+        """
+        list_names = []
+        html = self.fetch_page(archive_url)
+        
+        if not html:
+            logger.error(f"无法访问归档首页: {archive_url}")
+            return list_names
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        list_links = soup.find_all('a', href=re.compile(r'/list/[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+/'))
+        
+        for link in list_links:
+            href = link.get('href')
+            match = re.search(r'/list/(.+@.+)/', href)
+            if match:
+                list_name = match.group(1)
+                if list_name not in list_names:
+                    list_names.append(list_name)
+                    logger.info(f"发现邮件列表: {list_name}")
+        
+        logger.info(f"共发现 {len(list_names)} 个邮件列表")
+        return list_names
+    
     def get_emails_by_date_range(self, community: Dict, start_date: str, end_date: str, timezone: str = 'Asia/Shanghai') -> List[Dict]:
         """
         获取指定日期范围内的邮件列表
@@ -105,6 +138,7 @@ class MailmanCrawler:
         archive_url = community.get('archive_url', '')
         list_names = community.get('lists', [])
         community_name = community.get('name', 'Unknown')
+        auto_discover = community.get('auto_discover', False)
         
         if not archive_url:
             logger.warning(f"社区 {community_name} 未配置归档URL")
@@ -112,6 +146,10 @@ class MailmanCrawler:
         
         archive_type = self.detect_archive_type(archive_url)
         logger.info(f"社区 {community_name} 归档类型: {archive_type}")
+        
+        if auto_discover or not list_names:
+            logger.info(f"社区 {community_name} 启用自动发现邮件列表")
+            list_names = self.discover_lists(archive_url)
         
         for list_name in list_names:
             try:

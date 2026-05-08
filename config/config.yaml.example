@@ -3,17 +3,17 @@
 
 # 邮件列表配置
 mailing_lists:
+  # 示例1：自动发现所有邮件列表（推荐）
   - name: "openEuler社区"
-    url: "https://mail.openeuler.org/postorius/lists/"
     archive_url: "https://mailweb.openeuler.org/archives/"
-    lists:
-      - "dev@openeuler.org"
-      - "community@openeuler.org"
-      - "sig@openeuler.org"
+    auto_discover: true
+    # 自动发现模式下，lists 配置会被忽略
+    # 如果需要指定特定列表，可以设置 auto_discover: false 并配置 lists
     
+  # 示例2：手动指定邮件列表
   - name: "openGauss社区"
-    url: "https://mail.opengauss.org/postorius/lists/"
     archive_url: "https://mail.opengauss.org/hyperkitty/"
+    auto_discover: false
     lists:
       - "dev@opengauss.org"
       - "community@opengauss.org"
