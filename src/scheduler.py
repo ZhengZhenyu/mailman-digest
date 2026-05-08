@@ -26,15 +26,15 @@ class TaskScheduler:
         self.scheduler = BackgroundScheduler()
         self.timezone = config.get('timezone', 'Asia/Shanghai')
     
-    def add_daily_task(self, task_func: Callable, cron_expr: str) -> None:
+    def add_daily_task(self, task_func: Callable, cron_expr: str, args: tuple = None) -> None:
         """
         添加每日定时任务
         
         Args:
             task_func: 任务函数
             cron_expr: cron表达式
+            args: 任务函数的参数元组
         """
-        # 解析cron表达式
         parts = cron_expr.split()
         if len(parts) != 5:
             logger.error(f"无效的cron表达式: {cron_expr}")
@@ -54,6 +54,7 @@ class TaskScheduler:
         self.scheduler.add_job(
             task_func,
             trigger=trigger,
+            args=args,
             id='daily_digest',
             name='每日邮件列表汇总',
             replace_existing=True
@@ -100,14 +101,13 @@ def start_scheduler(config: Dict, task_func: Callable) -> None:
     cron_expr = schedule_config.get('cron', '0 9 * * *')
     
     scheduler = TaskScheduler(schedule_config)
-    scheduler.add_daily_task(task_func, cron_expr)
+    scheduler.add_daily_task(task_func, cron_expr, args=(config,))
     scheduler.start()
     
     next_run = scheduler.get_next_run_time()
     if next_run:
         logger.info(f"下次运行时间: {next_run}")
     
-    # 保持程序运行
     try:
         import signal
         import time
