@@ -33,19 +33,19 @@
 
 ```mermaid
 graph TB
-    Main[Main 主程序<br/>配置加载/日志设置/任务调度]
+    Main["Main 主程序<br>配置加载/日志设置/任务调度"]
     
-    Main --> Crawler[Crawler 爬虫模块<br/>邮件列表发现<br/>邮件内容爬取<br/>多格式支持]
-    Main --> Digest[Digest 摘要生成<br/>文本摘要<br/>HTML生成]
-    Main --> Scheduler[Scheduler 定时器<br/>Cron调度<br/>APScheduler]
+    Main --> Crawler["Crawler 爬虫模块<br>邮件列表发现<br>邮件内容爬取<br>多格式支持"]
+    Main --> Digest["Digest 摘要生成<br>文本摘要<br>HTML生成"]
+    Main --> Scheduler["Scheduler 定时器<br>Cron调度<br>APScheduler"]
     
-    Crawler --> Push[Push 推送模块]
+    Crawler --> Push["Push 推送模块"]
     Digest --> Push
     
-    Push --> EmailPusher[Email Pusher<br/>SMTP推送<br/>HTML邮件]
-    Push --> FeishuPusher[Feishu Pusher<br/>Webhook推送<br/>富文本消息]
+    Push --> EmailPusher["Email Pusher<br>SMTP推送<br>HTML邮件"]
+    Push --> FeishuPusher["Feishu Pusher<br>Webhook推送<br>富文本消息"]
     
-    Main --> ConfigManager[Config Manager 配置管理<br/>YAML配置加载<br/>已处理邮件记录管理]
+    Main --> ConfigManager["Config Manager 配置管理<br>YAML配置加载<br>已处理邮件记录管理"]
     
     ConfigManager -.-> Crawler
     ConfigManager -.-> Digest
@@ -64,19 +64,19 @@ graph TB
 
 ```mermaid
 flowchart TD
-    A[定时触发<br/>每天9:00] --> B[配置加载<br/>邮件列表配置<br/>爬取参数<br/>推送配置]
-    B --> C[邮件列表发现<br/>auto_discover: true<br/>访问归档首页<br/>解析所有列表]
-    C --> D[邮件爬取<br/>按日期范围<br/>多列表并行]
+    A["定时触发<br>每天9:00"] --> B["配置加载<br>邮件列表配置<br>爬取参数<br>推送配置"]
+    B --> C["邮件列表发现<br>auto_discover: true<br>访问归档首页<br>解析所有列表"]
+    C --> D["邮件爬取<br>按日期范围<br>多列表并行"]
     
-    D --> E1[Hyperkitty格式<br/>/thread/链接<br/>HTML解析]
-    D --> E2[Pipermail格式<br/>mbox解析]
+    D --> E1["Hyperkitty格式<br>/thread/链接<br>HTML解析"]
+    D --> E2["Pipermail格式<br>mbox解析"]
     
-    E1 --> F[过滤已处理邮件<br/>processed_emails<br/>URL去重]
+    E1 --> F["过滤已处理邮件<br>processed_emails<br>URL去重"]
     E2 --> F
     
-    F --> G[摘要生成<br/>文本清理<br/>摘要截取<br/>HTML/MD格式]
-    G --> H[报告推送<br/>Email SMTP<br/>Feishu Webhook]
-    H --> I[记录已处理邮件<br/>URL记录<br/>时间戳]
+    F --> G["摘要生成<br>文本清理<br>摘要截取<br>HTML/MD格式"]
+    G --> H["报告推送<br>Email SMTP<br>Feishu Webhook"]
+    H --> I["记录已处理邮件<br>URL记录<br>时间戳"]
     
     style A fill:#e1f5ff
     style B fill:#fff4e1
